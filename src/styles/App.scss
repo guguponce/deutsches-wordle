@@ -75,7 +75,7 @@ header {
 main {
   max-width: 600px;
   width: 100%;
-  height: calc(100vh - 75px);
+  height: calc(100svh - 100px);
   /* border: 1px solid red; */
   display: flex;
   justify-content: space-around;
@@ -95,7 +95,7 @@ main {
     justify-content: space-between;
   }
   #board-container {
-    height: 70%;
+    height: 65%;
     width: 100%;
     @include flex(column, flex-start, center);
     @media (min-width: $regmob-width) {
@@ -126,7 +126,9 @@ main {
         flex-direction: row;
         justify-content: space-around;
         align-items: center;
-
+        @media (width: $minmob-width) {
+          width: 280px;
+        }
         .cell {
           font-weight: 700;
           font-size: 36px;
