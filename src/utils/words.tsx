@@ -12,14 +12,10 @@ let arrExtras = extras.split(",").map((minuscula) => {
   return minuscula.toUpperCase();
 });
 export let filteredWords = [
-  [...arrExtras].filter((word) => {
-    if (arrPalabrasFiltradas.indexOf(word) == -1) {
-      return word;
-    }
-  }),
   ...arrPalabrasFiltradas,
+  [...arrExtras].filter((word) => arrPalabrasFiltradas.indexOf(word) == -1),
 ];
-export const allWords = [
+export let allWords = [
   "AALEN",
   "AASES",
   "ABART",
@@ -4138,3 +4134,11 @@ export const allWords = [
   "ZUVOR",
   "ZWEIT",
 ];
+
+filteredWords.forEach((word) => {
+  if (typeof word === "string") {
+    if (!allWords.includes(word)) {
+      allWords.push(word);
+    }
+  }
+});

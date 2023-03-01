@@ -10,23 +10,36 @@ import {
 import Row from "./components/Row";
 import Modal from "./components/Modal";
 import ModalInstructions from "./components/modals/ModalInstructions";
+import ModalGameFinished from "./components/modals/ModalGameFinished";
 
 const todaysWord = [...filteredWords].sort(() => Math.random() - 0.5)[0];
 function App() {
   const [inputWord, setInputWord] = useState("");
-  const currentRow = useRef<number>(0);
-
-  const [rowAnimation, toggleRowAnimation] = useState(false);
-  const [gameFinished, toggleGameFinished] = useState(false);
   const [guessedWords, setGuessedWords] = useState(initialGuessedWords);
   const [rowsStates, setRowsStates] = useState(initialRowsStates);
   const letState = useRef(initialLetState);
   const lettersStates = useRef(initialLettersStates);
+  const currentRow = useRef<number>(0);
+
+  const [rowAnimation, toggleRowAnimation] = useState(false);
+  const [gameFinished, toggleGameFinished] = useState(false);
+  const [statistics, setStatistics] = useState<{
+    currentResult: "" | "guessed" | "notGuessed";
+    timesGuessed: number;
+    timesPlayed: number;
+    currentStreak: number;
+    maxStreak: number;
+  }>({
+    currentResult: "",
+    timesGuessed: 0,
+    timesPlayed: 0,
+    currentStreak: 0,
+    maxStreak: 0,
+  });
   const [modalInstructions, toggleModalInstructions] = useState(true);
   const [modalStatistics, toggleModalStatistics] = useState(false);
 
   // ---------------functions---------------------------------
-
   const checkValidWord = useCallback((word: string) => {
     if (word === todaysWord) {
       toggleRowAnimation(true);
@@ -44,6 +57,7 @@ function App() {
             rowIndex === currentRow.current - 1 ? "checked" : rowState
           )
         );
+        console.log("currentRow.current", currentRow.current);
         assignLettersState();
         for (let i = 0; i < guessedWords.length; i++) {
           const row = guessedWords[i];
@@ -51,7 +65,7 @@ function App() {
             setInputWord("");
             currentRow.current = i;
             break;
-          } else if (currentRow.current === 6) {
+          } else if (guessedWords[5][4][0] !== " ") {
             toggleGameFinished(true);
           }
         }
@@ -166,13 +180,20 @@ function App() {
     });
   }
   // ---------------useEffects---------------------------------
-
   useEffect(() => {
-    // console.log("todaysWord", todaysWord);
-  }, []);
-
-  useEffect(() => {}, [rowAnimation]);
-
+    setStatistics((stats) =>
+      inputWord === todaysWord
+        ? {
+            ...stats,
+            currentResult: "guessed",
+            timesGuessed: currentRow.current + 1,
+          }
+        : { ...stats, currentResult: "notGuessed" }
+    );
+  }, [gameFinished]);
+  useEffect(() => {
+    // console.log(guessedWords[0][0][0] === " ")
+  }, [guessedWords]);
   useEffect(() => {
     document.addEventListener("keydown", keyPressed);
     return document.removeEventListener("keydown", (e) => e);
@@ -194,10 +215,20 @@ function App() {
   return (
     <div className="App">
       {modalInstructions && (
-        <Modal closeModal={()=>toggleModalInstructions(false)}>
+        <Modal closeModal={() => toggleModalInstructions(false)}>
           <ModalInstructions></ModalInstructions>
         </Modal>
       )}
+      {gameFinished && (
+        <Modal closeModal={() => toggleGameFinished(false)}>
+          <ModalGameFinished
+            result={statistics.currentResult}
+            timesGuessed={statistics.timesGuessed}
+            todaysWord={todaysWord}
+          ></ModalGameFinished>
+        </Modal>
+      )}
+
       <header>
         <h1 id="title" className="animate__animated animate__bounce">
           WORDLE
@@ -205,7 +236,7 @@ function App() {
         <div id="icons-container-header">
           <button
             id="instructions"
-            onClick={()=>toggleModalInstructions(true)}
+            onClick={() => toggleModalInstructions(true)}
             style={{
               backgroundImage: `url("https://img.icons8.com/material-outlined/24/000000/help.png")`,
             }}
@@ -249,9 +280,9 @@ function App() {
           </div>
           <div id="keyboard">
             {[
-              ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "Ü"],
-              ["A", "S", "D", "F", "G", "H", "J", "K", "L", "Ö", "Ä"],
-              ["ENTER", "Y", "X", "C", "V", "B", "N", "M", "DEL"],
+              ["Q", "W", "E", "R", "T", "Z", "U", "I", "O", "P"],
+              ["A", "S", "D", "F", "G", "H", "J", "K", "L"],
+              ["DEL", "Y", "X", "C", "V", "B", "N", "M", "ENTER"],
             ].map((keyboardRow, i) => (
               <div
                 key={keyboardRow.join("")}
